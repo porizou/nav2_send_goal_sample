@@ -12,27 +12,19 @@ using std::placeholders::_2;
 class Nav2Client : public rclcpp::Node
 {
 public:
-
   using NavigateToPose = nav2_msgs::action::NavigateToPose;
   using GoalHandleNavigateToPose = rclcpp_action::ClientGoalHandle<NavigateToPose>;
+  rclcpp_action::Client<NavigateToPose>::SharedPtr client_ptr_;
 
-  Nav2Client()
-  : Node("nav2_send_goal")
+  explicit Nav2Client(): Node("nav2_send_goal")
   {
+    //アクション Client の作成
+    this->client_ptr_  = rclcpp_action::create_client<NavigateToPose>(shared_from_this(), "navigate_to_pose");
   }
 
   void sendGoal(void) {
-    //アクション Client の作成
-    //rclcpp_action::create_client (rclcpp::Node::SharedPtr node, const std::string &name, rclcpp::callback_group::CallbackGroup::SharedPtr group=nullptr)
-    navigate_to_pose_client_ptr_ = rclcpp_action::create_client<NavigateToPose>(shared_from_this(), "navigate_to_pose");
-
     // アクションが提供されているまでに待つ
-    while (!this->navigate_to_pose_client_ptr_->wait_for_action_server(std::chrono::seconds(1))) {
-      // シャットダウンされたかどうか確認する
-      if (!rclcpp::ok()) {
-        RCLCPP_ERROR(get_logger(), "Interrupted while waiting for action server.");
-        rclcpp::shutdown();
-      }
+    while (!this->client_ptr_->wait_for_action_server()) {
       RCLCPP_INFO(get_logger(), "Waiting for action server...");
     }
 
@@ -43,33 +35,41 @@ public:
 
     goal_msg.pose.pose.position.x = -2;
     goal_msg.pose.pose.position.y = 0;
+    goal_msg.pose.pose.orientation.x = 0.0;
+    goal_msg.pose.pose.orientation.y = 0.0;
     goal_msg.pose.pose.orientation.w = 1.0;
+    goal_msg.pose.pose.orientation.z = 0.0;
 
-    //進捗状況のFeedbackコールバックを設定
+    //進捗状況を表示するFeedbackコールバックを設定
     auto send_goal_options = rclcpp_action::Client<NavigateToPose>::SendGoalOptions();
-    send_goal_options.feedback_callback =
-      std::bind(&Nav2Client::feedback_callback, this, _1, _2);
+    send_goal_options.feedback_callback = std::bind(&Nav2Client::feedbackCallback, this, _1, _2);
+    send_goal_options.result_callback = std::bind(&Nav2Client::resultCallback, this, _1);
     //Goal をサーバーに送信
-    auto goal_handle_future = navigate_to_pose_client_ptr_->async_send_goal(goal_msg, send_goal_options);
-
-    // Goalがサーバーでアクセプトされるまでに待つ
-    if (rclcpp::spin_until_future_complete(shared_from_this(), goal_handle_future) !=
-        rclcpp::executor::FutureReturnCode::SUCCESS) {
-      RCLCPP_ERROR(get_logger(), "Send goal call failed");
-      rclcpp::shutdown();
+    client_ptr_->async_send_goal(goal_msg, send_goal_options);
+  }
+  //feedback
+  void feedbackCallback(GoalHandleNavigateToPose::SharedPtr,const std::shared_ptr<const NavigateToPose::Feedback> feedback)
+  {
+    RCLCPP_INFO(get_logger(), "Distance remaininf = %f", feedback->distance_remaining);
+  }
+  //result
+  void resultCallback(const GoalHandleNavigateToPose::WrappedResult & result)
+  {
+    switch (result.code) {
+      case rclcpp_action::ResultCode::SUCCEEDED:
+        RCLCPP_INFO(get_logger(), "Success!!!");
+        break;
+      case rclcpp_action::ResultCode::ABORTED:
+        RCLCPP_ERROR(get_logger(), "Goal was aborted");
+        return;
+      case rclcpp_action::ResultCode::CANCELED:
+        RCLCPP_ERROR(get_logger(), "Goal was canceled");
+        return;
+      default:
+        RCLCPP_ERROR(get_logger(), "Unknown result code");
+        return;
     }
   }
-
-  void feedback_callback(
-    GoalHandleNavigateToPose::SharedPtr,
-    const std::shared_ptr<const NavigateToPose::Feedback> feedback)
-  {
-    RCLCPP_INFO(get_logger(), "Distance remaininf = %f",
-      feedback->distance_remaining);
-  }
-
-private:
-  rclcpp_action::Client<NavigateToPose>::SharedPtr navigate_to_pose_client_ptr_;
 };
 
 int main(int argc, char **argv)

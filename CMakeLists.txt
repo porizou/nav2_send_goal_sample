@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(nav2_goal_sample)
+project(nav2_send_goal)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -20,32 +20,22 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(nav2_msgs REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
 
-add_executable(nav2_goal_sample
+add_executable(nav2_send_goal
   src/sample.cpp
 )
-ament_target_dependencies(nav2_goal_sample
+ament_target_dependencies(nav2_send_goal
 rclcpp
 rclcpp_action
 nav2_msgs
 )
 
 install(TARGETS 
-  nav2_goal_sample
+  nav2_send_goal
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # uncomment the line when a copyright and license is not present in all source files
-  #set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # uncomment the line when this package is not in a git repo
-  #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 
