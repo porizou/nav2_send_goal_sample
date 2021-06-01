@@ -22,7 +22,7 @@ find_package(rclcpp_action REQUIRED)
 find_package(nav2_msgs REQUIRED)
 
 add_executable(nav2_send_goal
-  src/sample.cpp
+  src/nav2_send_goal.cpp
 )
 ament_target_dependencies(nav2_send_goal
 rclcpp
@@ -34,9 +34,5 @@ install(TARGETS
   nav2_send_goal
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
-
-if(BUILD_TESTING)
-  ament_lint_auto_find_test_dependencies()
-endif()
 
 ament_package()

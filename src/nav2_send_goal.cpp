@@ -16,10 +16,10 @@ public:
   using GoalHandleNavigateToPose = rclcpp_action::ClientGoalHandle<NavigateToPose>;
   rclcpp_action::Client<NavigateToPose>::SharedPtr client_ptr_;
 
-  explicit Nav2Client(): Node("nav2_send_goal")
+  Nav2Client(): Node("nav2_send_goal")
   {
     //アクション Client の作成
-    this->client_ptr_  = rclcpp_action::create_client<NavigateToPose>(shared_from_this(), "navigate_to_pose");
+    this->client_ptr_  = rclcpp_action::create_client<NavigateToPose>(this, "navigate_to_pose");
   }
 
   void sendGoal(void) {
@@ -30,10 +30,10 @@ public:
 
     //アクション　Goalの作成
     auto goal_msg = NavigateToPose::Goal();
-    goal_msg.pose.header.stamp = now();
+    goal_msg.pose.header.stamp = this->now();
     goal_msg.pose.header.frame_id = "map";
 
-    goal_msg.pose.pose.position.x = -2;
+    goal_msg.pose.pose.position.x = 2;
     goal_msg.pose.pose.position.y = 0;
     goal_msg.pose.pose.orientation.x = 0.0;
     goal_msg.pose.pose.orientation.y = 0.0;
