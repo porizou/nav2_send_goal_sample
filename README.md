@@ -1,31 +1,8 @@
-# アクションメッセージ型
+
+# Qiita
 
 
-```text:NavigateToPose.action
-
-#goal definition
-geometry_msgs/PoseStamped pose
-string behavior_tree
----
-#result definition
-std_msgs/Empty result
----
-geometry_msgs/PoseStamped current_pose
-builtin_interfaces/Duration navigation_time
-int16 number_of_recoveries
-float32 distance_remaining
-```
-
-### ROS Navigationのメッセージ型
-
-```MoveBase.action
-geometry_msgs/PoseStamped target_pose
----
----
-geometry_msgs/PoseStamped base_position
-
-```
-
+https://qiita.com/porizou1/items/cb9382bb2955c144d168
 
 # 参考
 
